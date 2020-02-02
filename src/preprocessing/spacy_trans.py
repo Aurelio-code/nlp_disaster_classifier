@@ -21,43 +21,29 @@ def lematize(document):
       if token.lemma_ != '-PRON-':
         tokens.append(token.lemma_) # if the lemma is not a pronoun then append
       else:
-        tokens.append(token)
-
+        tokens.append(token.lower_) # just append the string rep as is
+  
   return tokens
    
-def spacy_tokenization(corpus):
+def spacy_tokenizer(document, nlp):
   '''
-    tokenizes a corpus using spacy, cleans text, lematizes
+    tokenizes a document using spacy, cleans text, lematizes
     and removes stop words
 
     Args:
-      corpus : list
-        list of the different documents to tokenize
+      document : string
+        document string
+      nlp : spacy nlp
+        nlp object that contains all the funcs for lenguare processing
     Returns:
-      tokenized_corpus : list
-        list of tokenized and clean documents
+      tokenized_document : list<spacy<token>>
+        list of tokenized and cleaned tokens
   '''
-  nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner']) # for now disable parser and named entity recog
-  en_stop_words = list(spacy.lang.en.stop_words.STOP_WORDS) # define english stop words
-  
-  corpus = [clean_document(document) for document in corpus] # clean the corpus
-  # corpus = [nlp(document) for document in corpus] # call spacy
-  # corpus = [lematize(document) for document in corpus] # lemmatize 
-  
-  # ---- test funcs
-  corpus_generator = (nlp(document) for document in corpus) # define generator
-  g5 = [next(corpus_generator) for _ in range(5)] # just 2 first tweets from the generator
-  tokenized_corpus = [lematize(doc) for doc in g5]
-  
-  
-  return tokenized_corpus
+  doc = clean_document(document)
+  doc = nlp(document)
+  tokenized_document = lematize(doc)
 
-def main():
-  train, test = load_data()
-  
-  train_corpus = [_ for _ in train['text']] # convert pandas column into a list
-  tknzd_corpus = spacy_tokenization(train_corpus)
-  
+  return tokenized_document
 
 if __name__ == '__main__':
   for path in sys.path:
