@@ -19,8 +19,6 @@ def load_data():
   train = pd.read_csv(file_paths[1])
   test = pd.read_csv(file_paths[2])
 
-  print(train.head())
-
   return train, test
 
 def main():
