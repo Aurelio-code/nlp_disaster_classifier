@@ -4,6 +4,14 @@ import spacy
 
 from src.util.utils import load_data, clean_document
 
+def clean_corpus(corpus):
+  nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner']) # for now disable parser and named entity recog
+  en_stop_words = list(spacy.lang.en.stop_words.STOP_WORDS) # define english stop words
+  
+  cleaned_corpus = [spacy_tokenizer(doc, nlp) for doc in corpus]
+
+  return cleaned_corpus
+
 def lematize(document):
   '''
     Lematizes the document (tweet)
@@ -40,7 +48,7 @@ def spacy_tokenizer(document, nlp):
         list of tokenized and cleaned tokens
   '''
   doc = clean_document(document)
-  doc = nlp(document)
+  doc = nlp(doc)
   tokenized_document = lematize(doc)
 
   return tokenized_document

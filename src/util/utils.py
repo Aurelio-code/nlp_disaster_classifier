@@ -40,16 +40,14 @@ def remove_emoji(document):
 def remove_punct(document):
   '''
     Removes puntuation #, @ etc
-  '''  
-  table = str.maketrans('', '', string.punctuation)
-  
-  return document.translate(table)
+  '''
+  return document.translate(str.maketrans('', '', string.punctuation))
 
 def clean_document(document):
   document = remove_html(url_strip(document)).lower() # remove urls
   document = remove_html(document) # remove htmls
   document = remove_emoji(document) # remove emojis <- this can be handled in spacy directly
-  document = remove_punct(document) # remove punctiation
+  document = remove_punct(document) # remove punctuation
   document = document.strip().rstrip() # remove front and end whitespace
   document = re.sub(' +', ' ',document) # remove multiple whitespace
   return document

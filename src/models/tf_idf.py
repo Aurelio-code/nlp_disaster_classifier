@@ -28,12 +28,10 @@ def main():
   y_pred = pipe.predict(X_test)
   print(classification_report(y_test, y_pred))
 
-
   # ---- test funcs
   # corpus_generator = (nlp(document) for document in corpus) # define generator
   # g5 = [next(corpus_generator) for _ in range(5)] # just 2 first tweets from the generator
   # tokenized_corpus = [lematize(doc) for doc in g5]
   
-
 if __name__ == '__main__':
   main()
