@@ -7,14 +7,42 @@ from gensim.models.phrases import Phrases, Phraser
 from gensim.models import Word2Vec
 
 from src.preprocessing.spacy_trans import clean_corpus
-from src.util.utils import load_data
+from src.util.utils import load_data, build_vocab, build_word_indices, txt_to_wrd_seq
+from src.keras.keras_models import Word2Vec
 
-def gensim_w2v():
+def tokenize_corpus():
+	'''
+		Loads the data and calls spacy tokenization
+	'''
 	train, test = load_data()
 	X, y  = train['text'], train['target']
 	
 	# clean + tokenize
 	cleaned_corpus = clean_corpus(X)
+
+	return cleaned_corpus
+
+def keras_w2v():
+	'''
+		w2v using keras as backend
+	'''
+	cleaned_corpus = tokenize_corpus() # clean + tokenize TODO check cleaning for \n\n characters
+	vocab_dict = build_vocab(cleaned_corpus) # build the vocab
+	wrd2idx, idx2wrd = build_word_indices(vocab_dict) # build wrd2idx + idx2word dicts
+	wrd_seq = txt_to_wrd_seq(cleaned_corpus, wrd2idx) # build the int seqs of words
+	wrd_seq = np.asarray(wrd_seq, dtype=int) # transform into a numpy array
+
+	vocab_size = len(vocab_dict)
+	 
+	Word_to_Vec_model = Word2Vec() # call the obj
+	Word_to_Vec_model.build(100, vocab_size, 0.1) # build the model
+	Word_to_Vec_model.train(wrd_seq, 3, 10, 100, 42)
+
+def gensim_w2v():
+	'''
+		w2v using the gensim lib
+	'''
+	cleaned_corpus = tokenize_corpus()
 	
 	# a Phraser takes a list of lists of words as input
 	phrases = Phrases(cleaned_corpus, min_count=30, progress_per=10)
@@ -40,4 +68,5 @@ def gensim_w2v():
 	mean_vector = np.mean(emb_matrix, axis=0) # this will be used for the <UNK> tokens on test data
 
 if __name__ == '__main__':
-  gensim_w2v()
+  #gensim_w2v()
+	keras_w2v()

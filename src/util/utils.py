@@ -2,6 +2,10 @@ import string
 import re
 import pandas as pd 
 import os
+import random
+import numpy as np
+
+from collections import defaultdict
 
 def url_strip(document):
   '''
@@ -72,8 +76,90 @@ def load_data():
 
   return train, test
 
-def main():
-  load_data()
+def build_vocab(cleaned_corpus):
+  '''
+    Builds the vocabulary given a cleaned corpus
+  '''
+  word_freq = defaultdict(int)
+  for sentence in cleaned_corpus:
+    for word in sentence:
+      word_freq[word] += 1 # sum 1 for each word occurance
+
+  return word_freq
+
+def build_word_indices(word_dict):
+  wrd2idx = dict() # word to index dictionary
+  idx2wrd = dict()  # index to word dictionary
+
+  for idx, wrd in enumerate(word_dict):
+    wrd2idx[wrd] = idx
+    idx2wrd[idx] = wrd
+  
+  return wrd2idx, idx2wrd
+
+def txt_to_wrd_seq(corpus, wrd2idx):
+  '''
+    transforms a corpus into a sequence of previously encoded integers
+  '''
+  sequence = [] # define empty sequence
+  for document in corpus:
+    for word in document:
+      sequence.append(wrd2idx[word]) # append the int representing that word
+
+  return sequence
+
+def build_iterator(seq, windows_size, neg_samples, seed):
+  '''
+    Build the skipgram generator
+    returns (word, context, label) at each iteration
+  '''
+  random.seed = seed # set the seed
+  seq_len = seq.shape[0] 
+  epoch = 0
+  i = 0 
+  while True:
+    # define start and end of the window
+    window_start = max(0, i - windows_size)
+    window_end = min(0, i + windows_size + 1)
+
+    # loop over the length of the windows to get the positive samples
+    for j in range(window_start, window_end): 
+      if i != j:
+        word = seq[i]
+        context = seq[j]
+        yield (word, context, 1)
+    
+    # loop over the neg samples (random word sample)
+    for negative in range(neg_samples):
+      # get a random negative sample
+      random_int = random.randrange(1, seq_len)
+      word = seq[i]
+      context = seq[random_int]
+      yield (word, context, 0)
+
+    i += 1
+    if i == seq_len:
+      epoch += 1
+      print("iterated %d times over data set", epoch)
+      i = 0
+
+def build_skip_gram(sequence, windows_size, negative_samples, batch_size, seed):
+  ''''
+    Builds the batch iterator
+  '''
+  iterator = build_iterator(sequence, windows_size, negative_samples, seed)
+  
+  words = np.empty(shape=batch_size, dtype=int)
+  contexts = np.empty(shape=batch_size, dtype=int)
+  labels = np.empty(shape=batch_size, dtype=int)
+  
+  while True:
+      for i in range(batch_size):
+        word, context, label = next(iterator)
+        words[i] = word
+        contexts[i] = context
+        labels[i] = label
+      yield ([words, contexts], labels)
 
 if __name__ == '__main__':
   main()
