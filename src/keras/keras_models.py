@@ -1,5 +1,7 @@
 
 import tensorflow as tf
+import numpy as np
+import pandas as pd
 from tensorflow import keras
 from tensorflow.keras.initializers import RandomNormal
 from tensorflow.keras import layers
@@ -53,7 +55,7 @@ class Word2Vec:
     )(context_input)
 
     # merge the input with the context
-    merged = dot([word_input, context_input], axes = 1, normalize = False)
+    merged = dot([embed_layer, context_embeds], axes = 1, normalize = False)
     merged = Flatten()(merged)
     output = Dense(1, activation='sigmoid', name="output")(merged)
 
@@ -83,4 +85,15 @@ class Word2Vec:
       class_weight=class_weight,
       max_queue_size=100
     )
-    print('done trainin boyz')
+    print('---> Training Finished')
+
+  def write_embeddings(self, path, idx2wrd, embeddings):
+    '''
+      Write embeddings method
+    '''
+    np_index = np.empty(shape=len(idx2wrd), dtype=object)
+    for index, word in idx2wrd.items():
+      np_index[index] = word
+    
+    df = pd.DataFrame(data=embeddings, index=np_index)
+    df.to_csv(path, float_format="%.4f", header=False)

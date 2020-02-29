@@ -36,8 +36,12 @@ def keras_w2v():
 	 
 	Word_to_Vec_model = Word2Vec() # call the obj
 	Word_to_Vec_model.build(100, vocab_size, 0.1) # build the model
-	Word_to_Vec_model.train(wrd_seq, 3, 10, 100, 42)
+	Word_to_Vec_model.train(wrd_seq, 3, 10, 100, 1)
 
+	# write embeddings
+	emb_layer = Word_to_Vec_model.model.get_layer("word_embeddings").get_weights()[0]
+	Word_to_Vec_model.write_embeddings('./data/embeddings.csv', idx2wrd, emb_layer)
+	
 def gensim_w2v():
 	'''
 		w2v using the gensim lib
